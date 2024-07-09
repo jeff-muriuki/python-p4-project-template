@@ -53,15 +53,21 @@ class Logout(Resource):
 
 class UserResource(Resource):
     @authenticate
+    def get(self):
+        users_dict = [user.to_dict() for user in User.query.all()]
+        return make_response(users_dict, 200)
+
+class UserResourceById(Resource):
+    @authenticate
     def get(self, user_id):
         user = User.query.get_or_404(user_id)
         return make_response(user.to_dict(), 200)
 
 class ProjectResource(Resource):
     @authenticate
-    def get(self, project_id):
-        project = Project.query.get_or_404(project_id)
-        return make_response(project.to_dict(), 200)
+    def get(self):
+        projects_dict = [project.to_dict() for project in Project.query.all()]
+        return make_response(projects_dict, 200)
 
     @authenticate
     def post(self):
@@ -93,12 +99,22 @@ class ProjectResource(Resource):
         db.session.delete(project)
         db.session.commit()
         return make_response(jsonify({"message": "Project deleted"}), 200)
+    
+class ProjectResourceById(Resource):
+    @authenticate
+    def get(self, project_id):
+        project = Project.query.get_or_404(project_id)
+        return make_response(project.to_dict(), 200)
+    
 
 class TaskResource(Resource):
     @authenticate
-    def get(self, task_id):
-        task = Task.query.get_or_404(task_id)
-        return make_response(task.to_dict(), 200)
+    def get(self):
+        tasks_dict = []
+        for task in Task.query.all():
+            task_dict = task.to_dict()
+            tasks_dict.append(task_dict)
+        return make_response(tasks_dict, 200)
 
     @authenticate
     def post(self):
@@ -130,14 +146,23 @@ class TaskResource(Resource):
         db.session.delete(task)
         db.session.commit()
         return make_response(jsonify({"message": "Task deleted"}), 200)
+    
+class TaskResourceById(Resource):
+    @authenticate
+    def get(self, task_id):
+        task = Task.query.filter(Task.id == task_id).first_or_404()
+        return make_response(task.to_dict(), 200)
 
 api = Api(app)
 api.add_resource(Signup, '/signup')
 api.add_resource(Login, '/login')
 api.add_resource(Logout, '/logout')
-api.add_resource(UserResource, '/users/<int:user_id>')
-api.add_resource(ProjectResource, '/projects', '/projects/<int:project_id>')
-api.add_resource(TaskResource, '/tasks', '/tasks/<int:task_id>')
+api.add_resource(UserResourceById, '/users/<int:user_id>')
+api.add_resource(UserResource, '/users')
+api.add_resource(ProjectResource, '/projects')
+api.add_resource(ProjectResourceById,'/projects/<int:project_id>')
+api.add_resource(TaskResource, '/tasks')
+api.add_resource(TaskResourceById, '/tasks/<int:task_id>')
 
 if __name__ == '__main__':
     app.run(debug=True)
