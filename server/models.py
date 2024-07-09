@@ -17,7 +17,10 @@ class User(db.Model, SerializerMixin):
     __tablename__= 'users'
 
     id= db.Column(db.Integer, primary_key=True) 
-    username= db.Column(db.String, unique=True, nullable=False)
+
+    #lets remove the constraint unique=True since different users may share the same name
+    # and in addition we have email set to unique.
+    username= db.Column(db.String, nullable=False)
     email= db.Column(db.String, unique=True, nullable=False)
     password_hash= db.Column(db.String, unique=True, nullable=False)
     bio= db.Column(db.String, nullable=False)
@@ -51,6 +54,8 @@ class Project(db.Model, SerializerMixin):
 
     tasks= db.relationship('Task', backref='project', lazy=True)
 
+    serialize_rules = ('-tasks',)
+
 
 class Task(db.Model, SerializerMixin):
     __tablename__= 'tasks'
@@ -60,6 +65,8 @@ class Task(db.Model, SerializerMixin):
     description= db.Column(db.String, nullable=False)
     due_date= db.Column(db.Date, nullable=False)
     project_id= db.Column(db.Integer, db.ForeignKey('projects.id'), nullable=False)
+
+    serialize_rules = ('-project',)
 
     
 
