@@ -13,6 +13,7 @@ class UserProject(db.Model, SerializerMixin):
     project_id = db.Column(db.Integer, db.ForeignKey('projects.id'), primary_key=True)
     role = db.Column(db.String(50)) 
     
+   
 class User(db.Model, SerializerMixin):
     __tablename__= 'users'
 
@@ -21,6 +22,8 @@ class User(db.Model, SerializerMixin):
     email= db.Column(db.String, unique=True, nullable=False)
     password_hash= db.Column(db.String, unique=True, nullable=False)
     bio= db.Column(db.String, nullable=False)
+
+    serialize_only= ('id', 'username', 'email', 'password_hash', 'bio')
 
 
     @hybrid_property
@@ -50,7 +53,7 @@ class Project(db.Model, SerializerMixin):
     end_date= db.Column(db.Date, nullable=False)
 
     tasks= db.relationship('Task', backref='project', lazy=True)
-
+    serialize_only= ('id', 'name', 'description', 'start_date', 'end_date') 
 
 class Task(db.Model, SerializerMixin):
     __tablename__= 'tasks'
@@ -61,7 +64,7 @@ class Task(db.Model, SerializerMixin):
     due_date= db.Column(db.Date, nullable=False)
     project_id= db.Column(db.Integer, db.ForeignKey('projects.id'), nullable=False)
 
-    
+    serialize_only= ('id', 'name', 'description', 'due_date', 'project_id')    
 
 
 
