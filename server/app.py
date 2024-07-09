@@ -53,6 +53,12 @@ class Logout(Resource):
 
 class UserResource(Resource):
     @authenticate
+    def get(self):
+        users_dict = [user.to_dict() for user in User.query.all()]
+        return make_response(users_dict, 200)
+
+class UserResourceById(Resource):
+    @authenticate
     def get(self, user_id):
         user = User.query.get_or_404(user_id)
         return make_response(user.to_dict(), 200)
@@ -64,9 +70,9 @@ class UsersResource(Resource):
     
 class ProjectResource(Resource):
     @authenticate
-    def get(self, project_id):
-        project = Project.query.get_or_404(project_id)
-        return make_response(project.to_dict(), 200)
+    def get(self):
+        projects_dict = [project.to_dict() for project in Project.query.all()]
+        return make_response(projects_dict, 200)
 
     @authenticate
     def post(self):
@@ -98,6 +104,13 @@ class ProjectResource(Resource):
         db.session.delete(project)
         db.session.commit()
         return make_response(jsonify({"message": "Project deleted"}), 200)
+    
+class ProjectResourceById(Resource):
+    @authenticate
+    def get(self, project_id):
+        project = Project.query.get_or_404(project_id)
+        return make_response(project.to_dict(), 200)
+    
 
 class ProjectsResource(Resource):
     @authenticate
@@ -107,9 +120,12 @@ class ProjectsResource(Resource):
 
 class TaskResource(Resource):
     @authenticate
-    def get(self, task_id):
-        task = Task.query.get_or_404(task_id)
-        return make_response(task.to_dict(), 200)
+    def get(self):
+        tasks_dict = []
+        for task in Task.query.all():
+            task_dict = task.to_dict()
+            tasks_dict.append(task_dict)
+        return make_response(tasks_dict, 200)
 
     @authenticate
     def post(self):
@@ -142,41 +158,13 @@ class TaskResource(Resource):
         db.session.commit()
         return make_response(jsonify({"message": "Task deleted"}), 200)
 
-class TasksResource(Resource):
-    @authenticate
-    def get(self):
-        tasks = Task.query.all()
-        return make_response(jsonify([task.to_dict() for task in tasks]), 200)
-    
-class UserProjectResource(Resource):
-    @authenticate
-    def post(self):
-        data = request.get_json()
-        new_user_project = UserProject(
-            user_id=data['user_id'],
-            project_id=data['project_id'],
-            role=data.get('role', 'member')
-        )
-        db.session.add(new_user_project)
-        db.session.commit()
-        return make_response(new_user_project.to_dict(), 201)
-
-    @authenticate
-    def get(self):
-        user_projects = UserProject.query.all()
-        return make_response(jsonify([user_project.to_dict() for user_project in user_projects]), 200)    
-    
 api = Api(app)
 api.add_resource(Signup, '/signup')
 api.add_resource(Login, '/login')
 api.add_resource(Logout, '/logout')
-api.add_resource(UsersResource, '/users')
 api.add_resource(UserResource, '/users/<int:user_id>')
-api.add_resource(ProjectsResource, '/projects')
 api.add_resource(ProjectResource, '/projects', '/projects/<int:project_id>')
-api.add_resource(TasksResource, '/tasks')
 api.add_resource(TaskResource, '/tasks', '/tasks/<int:task_id>')
-api.add_resource(UserProjectResource, '/user_projects')
 
 if __name__ == '__main__':
     app.run(debug=True)
